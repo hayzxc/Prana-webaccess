@@ -129,7 +129,7 @@ export function RecordSheetManagement({
         readings: [],
         inspector: { name: user?.name || "" },
       };
-      // @ts-ignore
+      // @ts-expect-error - Temporary type mismatch
       setRecordSheets([...recordSheets, newSheetWithRelations]);
 
       setShowCreateForm(false);
@@ -271,7 +271,7 @@ export function RecordSheetManagement({
         reading.inspector,
       ]);
 
-      // @ts-ignore
+      // @ts-expect-error - jsPDF lastAutoTable type
       const lastTableY = doc.lastAutoTable.finalY;
       autoTable(doc, {
         head: [tableColumn],
@@ -281,7 +281,7 @@ export function RecordSheetManagement({
 
       // Add Notes
       if (selectedSheet.notes) {
-        // @ts-ignore
+        // @ts-expect-error - jsPDF lastAutoTable type
         const finalY = doc.lastAutoTable.finalY;
         doc.setFontSize(12);
         doc.text("Catatan:", 14, finalY + 15);

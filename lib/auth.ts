@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-expect-error - NextAuth types compatibility
 import type { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 
@@ -48,14 +48,14 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    // @ts-ignore
+    // @ts-expect-error - NextAuth callback types
     async jwt({ token, user }) {
       if (user) {
         token.role = user.role
       }
       return token
     },
-    // @ts-ignore
+    // @ts-expect-error - NextAuth callback types
     async session({ session, token }) {
       if (token) {
         session.user.id = token.sub!

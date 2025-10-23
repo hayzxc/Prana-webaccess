@@ -167,7 +167,7 @@ export function ContainerTracking() {
             <ul className="text-sm text-prana-gray space-y-1">
               <li>• Masukkan nomor kontainer (contoh: TEMU1234567)</li>
               <li>• Masukkan notice ID (contoh: NOT-2023-001)</li>
-              <li>• Klik tombol "Cari" untuk melihat progress fumigasi</li>
+              <li>• Klik tombol &quot;Cari&quot; untuk melihat progress fumigasi</li>
               <li>
                 • Informasi akan menampilkan status real-time dari proses
                 fumigasi
