@@ -1,0 +1,218 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===================================
+//              MODELS
+// ===================================
+
+// Model untuk User
+model User {
+  id       String @id @default(cuid())
+  name     String
+  email    String @unique
+  password String // Ingat untuk hash password ini sebelum disimpan
+  role     Role   @default(USER)
+
+  createdAt DateTime @default(now())
+
+  // Relasi: Satu User bisa menerbitkan banyak sertifikat
+  issuedCertificates  Certificate[]        @relation("IssuedBy")
+  // Relasi: Satu User (inspektur) bisa memiliki banyak record sheet
+  inspectedSheets     RecordSheet[]        @relation("InspectedBy")
+  // Relasi: Satu User bisa memiliki banyak tracking
+  fumigationTrackings FumigationTracking[]
+
+  @@map("users") // Nama tabel di database akan menjadi "users"
+}
+
+// Model untuk Sertifikat Fumigasi
+model Certificate {
+  id                    String            @id @default(cuid())
+  name                  String
+  recipientEmail        String
+  recipientName         String
+  issueDate             DateTime
+  status                CertificateStatus
+  fileUrl               String?
+  fileName              String?
+  fileSize              Int?
+  serviceType           String?
+  location              String?
+  description           String?
+  containerNumber       String?           @unique // Unique untuk tracking yang lebih mudah
+  noticeId              String?           @unique // Unique untuk tracking yang lebih mudah
+  woNumber              String?
+  gassingTime           DateTime?
+  aerationStartTime     DateTime?
+  containerReadyTime    DateTime?
+  progressStatus        ProgressStatus?
+  phytosanitaryUrl      String?
+  phytosanitaryFileName String?
+
+  // Relasi: Sertifikat ini diterbitkan oleh siapa
+  issuedBy   User?   @relation("IssuedBy", fields: [issuedById], references: [id], onDelete: Cascade)
+  issuedById String? @map("issued_by_id")
+
+  // Relasi: Satu sertifikat hanya punya satu record sheet
+  recordSheet RecordSheet?
+
+  // Relasi: Satu sertifikat hanya punya satu tracking
+  fumigationTracking FumigationTracking?
+
+  @@map("certificates")
+}
+
+// Model untuk Tracking Progres Fumigasi
+model FumigationTracking {
+  id                 String         @id @default(cuid())
+  containerNumber    String
+  noticeId           String
+  woNumber           String?
+  companyName        String
+  companyEmail       String
+  location           String
+  gassingTime        DateTime?
+  aerationStartTime  DateTime?
+  containerReadyTime DateTime?
+  progressStatus     ProgressStatus @default(PENDING)
+  notes              String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  // Relasi: Tracking ini milik sertifikat mana (opsional jika tracking dibuat duluan)
+  certificate   Certificate? @relation(fields: [certificateId], references: [id], onDelete: Cascade)
+  certificateId String?      @unique @map("certificate_id")
+
+  // Relasi: Tracking ini di-assign ke user siapa (opsional)
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String? @map("user_id")
+
+  @@map("fumigation_trackings")
+}
+
+// Model untuk Catatan Detail Fumigasi
+model RecordSheet {
+  id              String   @id @default(cuid())
+  commodity       String
+  treatmentDate   DateTime
+  gasType         String
+  concentration   String
+  exposureTime    String
+  temperature     String
+  humidity        String?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  containerNumber String?
+
+  // Relasi: Record sheet ini milik sertifikat mana (wajib, 1-to-1)
+  certificate   Certificate @relation(fields: [certificateId], references: [id], onDelete: Cascade)
+  certificateId String      @unique @map("certificate_id")
+
+  // Relasi: Record sheet ini diperiksa oleh siapa
+  inspector   User   @relation("InspectedBy", fields: [inspectorId], references: [id], onDelete: Cascade)
+  inspectorId String @map("inspector_id")
+
+  // Relasi: Satu record sheet punya banyak pembacaan gas
+  readings GasReading[]
+
+  @@map("record_sheets")
+}
+
+// Model untuk setiap pembacaan gas
+model GasReading {
+  id            String   @id @default(cuid())
+  timestamp     DateTime
+  concentration Float
+  temperature   Float
+  humidity      Float?
+  location      String
+  inspector     String // Nama inspektur saat pembacaan
+
+  // Relasi: Pembacaan ini milik record sheet mana
+  recordSheet   RecordSheet @relation(fields: [recordSheetId], references: [id], onDelete: Cascade)
+  recordSheetId String      @map("record_sheet_id")
+
+  @@map("gas_readings")
+}
+
+model GeneratedCertificate {
+  id                String   @id @default(cuid())
+  createdAt         DateTime @default(now())
+  fileUrl           String
+  fileName          String
+  formData          Json
+  certificateNumber String
+  clientName        String
+}
+
+// Model untuk Request Konsultasi Customer
+model ConsultationRequest {
+  id                String                    @id @default(cuid())
+  customerName      String
+  customerEmail     String
+  customerPhone     String?
+  companyName       String?
+  serviceType       ConsultationServiceType   @default(FUMIGATION)
+  message           String
+  status            ConsultationStatus        @default(PENDING)
+  adminNotes        String?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+
+  @@map("consultation_requests")
+}
+
+// ===================================
+//               ENUMS
+// ===================================
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum CertificateStatus {
+  VALID
+  EXPIRED
+  REVOKED
+}
+
+enum ProgressStatus {
+  PENDING
+  GASSING
+  AERATION
+  READY
+  COMPLETED
+}
+
+enum ConsultationServiceType {
+  FUMIGATION
+  CARGO_SURVEY
+  MARINE_SURVEY
+  PRESHIPMENT
+  INSURANCE
+  QUALITY_CONTROL
+  ISPM
+  GENERAL_CONSULTATION
+}
+
+enum ConsultationStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}

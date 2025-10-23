@@ -1,0 +1,149 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@theme inline {
+  --font-sans: var(--font-geist);
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+:root {
+    --background: 0 0% 100%;
+  --foreground: 0 0% 9%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 9%;
+  --primary: 226 65% 33%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222 47% 13%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 20% 49%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222 47% 13%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 226 65% 33%;
+  --chart-1: 21 90% 52%;
+  --chart-2: 37 92% 43%;
+  --chart-3: 18 83% 48%;
+  --chart-4: 38 92% 50%;
+  --chart-5: 48 95% 53%;
+  --radius: 0.5rem;
+  --sidebar: 210 40% 98%;
+  --sidebar-foreground: 215 25% 27%;
+  --sidebar-primary: 226 65% 33%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 210 40% 96%;
+  --sidebar-accent-foreground: 222 47% 13%;
+  --sidebar-border: 214 32% 91%;
+  --sidebar-ring: 226 65% 33%;
+
+  /* Prana specific colors */
+  --prana-navy: #1e3a8a;
+  --prana-blue: #3b82f6;
+  --prana-light-blue: #dbeafe;
+  --prana-gray: #64748b;
+  --prana-light-gray: #f8fafc;
+}
+
+/* .dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --card: #0a0a0a;
+  --card-foreground: #ededed;
+  --popover: #0a0a0a;
+  --popover-foreground: #ededed;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #1f2937;
+  --secondary-foreground: #f9fafb;
+  --muted: #1f2937;
+  --muted-foreground: #9ca3af;
+  --accent: #1f2937;
+  --accent-foreground: #f9fafb;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #374151;
+  --input: #374151;
+  --ring: #3b82f6;
+  --chart-1: #f97316;
+  --chart-2: #d97706;
+  --chart-3: #ea580c;
+  --chart-4: #f59e0b;
+  --chart-5: #eab308;
+  --sidebar: #111827;
+  --sidebar-foreground: #d1d5db;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1f2937;
+  --sidebar-accent-foreground: #f9fafb;
+  --sidebar-border: #374151;
+  --sidebar-ring: #3b82f6;
+} */
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Prana specific utility classes */
+.prana-navy {
+  color: var(--prana-navy);
+}
+
+.bg-prana-navy {
+  background-color: var(--prana-navy);
+}
+
+.prana-blue {
+  color: var(--prana-blue);
+}
+
+.bg-prana-blue {
+  background-color: var(--prana-blue);
+}
+
+.prana-gray {
+  color: var(--prana-gray);
+}
+
+.bg-prana-gray {
+  background-color: var(--prana-light-gray);
+}
+
+/* Certificate status colors */
+.status-active {
+  @apply bg-green-50 text-green-700 border-green-200;
+}
+
+.status-expired {
+  @apply bg-red-50 text-red-700 border-red-200;
+}
+
+.status-pending {
+  @apply bg-yellow-50 text-yellow-700 border-yellow-200;
+}
+
+.status-draft {
+  @apply bg-gray-50 text-gray-700 border-gray-200;
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-full-width {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+}
