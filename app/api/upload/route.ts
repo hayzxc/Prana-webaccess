@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/auth-middleware";
 import { UTApi } from "uploadthing/server";
 
-export const utapi = new UTApi();
+// Internal instance, not exported
+const utapi = new UTApi();
 
 export const POST = withAdminAuth(async (request) => {
   const data = await request.formData();

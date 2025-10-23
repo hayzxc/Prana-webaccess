@@ -396,6 +396,60 @@ npm run lint
 npm run format
 ```
 
+## 🚀 Deployment
+
+### Cloudflare Pages
+
+1. **Prepare for deployment:**
+```bash
+# Install dependencies
+npm install
+
+# Update ESLint (if needed)
+npm install eslint@^8.57.0 eslint-config-next@14.2.16 --save-dev
+```
+
+2. **Connect to Cloudflare Pages:**
+   - Login to Cloudflare Dashboard
+   - Go to Pages → Create a project
+   - Connect your Git repository
+
+3. **Configure Build Settings:**
+   - **Framework preset**: Next.js
+   - **Build command**: `npm run build`
+   - **Build output directory**: `.next`
+   - **Node version**: `20`
+
+4. **Set Environment Variables** in Cloudflare Dashboard:
+```env
+DATABASE_URL=your_postgresql_url
+JWT_SECRET=your_secret_key
+NEXTAUTH_SECRET=your_nextauth_secret
+NEXT_PUBLIC_APP_URL=https://your-domain.pages.dev
+NODE_ENV=production
+```
+
+5. **Deploy:**
+   - Push to your main branch
+   - Cloudflare will automatically build and deploy
+
+### Vercel Deployment
+
+1. Push code to GitHub/GitLab
+2. Import project in Vercel
+3. Configure environment variables
+4. Deploy
+
+### Database Migration (Production)
+
+```bash
+# Production migration
+npx prisma migrate deploy
+
+# Generate Prisma Client
+npx prisma generate
+```
+
 ## 📝 Environment Variables
 
 ```env
@@ -467,5 +521,6 @@ For issues and questions:
 ---
 
 **Built with ❤️ for PT Prana Argentum**
-#   P r a n a - w e b a c c e s s  
+#   P r a n a - w e b a c c e s s 
+ 
  
