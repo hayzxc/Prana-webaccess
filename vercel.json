@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "app/api/**/*.ts": {
-      "maxDuration": 30
-    }
-  },
   "headers": [
     {
       "source": "/api/(.*)",
@@ -21,12 +16,6 @@
           "value": "Content-Type, Authorization"
         }
       ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/uploads/(.*)",
-      "destination": "/api/files/$1"
     }
   ]
 }
