@@ -65,7 +65,11 @@ export default function GenerateCertificatePage() {
 
   // Fungsi untuk memperbarui state setiap kali ada perubahan di input
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type, checked } = e.target;
+    const target = e.target as HTMLInputElement | HTMLTextAreaElement;
+    const { name, value } = target;
+    const type = (target as HTMLInputElement).type;
+    const checked = (target as HTMLInputElement).checked;
+    
     setFormData((prev) => ({ 
       ...prev, 
       [name]: type === 'checkbox' ? checked : value 
