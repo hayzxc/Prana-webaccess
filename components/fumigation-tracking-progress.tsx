@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   Clock,
-  MapPin,
   FileText,
   CheckCircle,
   AlertCircle,
@@ -16,7 +15,6 @@ import { FumigationTracking, ProgressStatus } from "@/types";
 import {
   PROGRESS_STATUS_TEXT,
   getProgressPercentage,
-  getTargetReadyTime,
 } from "@/lib/utils";
 
 interface FumigationTrackingProgressProps {

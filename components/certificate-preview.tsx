@@ -1,26 +1,13 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
-  Download,
-  Eye,
   Calendar,
   Building,
-  Package,
-  Thermometer,
-  Clock,
   User,
   Info,
   FileText,
 } from "lucide-react";
-import { Certificate, CertificateStatus, SafeUser } from "@/types";
-import toast from "react-hot-toast";
-
-type CertificateWithIssuer = Certificate & {
-  issuedBy: Pick<SafeUser, "name"> | null;
-};
+import { Certificate, CertificateStatus } from "@/types";
 
 interface CertificatePreviewProps {
   certificate: Certificate;
@@ -55,7 +42,7 @@ export function CertificatePreview({ certificate }: CertificatePreviewProps) {
     });
   };
 
-  const statusProps = getStatusProps(certificate.status);
+  const _statusProps = getStatusProps(certificate.status);
 
   return (
     <div className="space-y-3 mb-4">

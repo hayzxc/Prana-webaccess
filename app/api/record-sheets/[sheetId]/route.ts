@@ -15,7 +15,7 @@ export const DELETE = withAdminAuth(
         where: { id: sheetId },
       });
       return new NextResponse(null, { status: 204 }); // No Content
-    } catch (error) {
+    } catch (_error) {
       return NextResponse.json(
         { success: false, message: "Record sheet not found" },
         { status: 404 }

@@ -180,7 +180,7 @@ const handleResponse = async (response: Response) => {
     try {
       const error = await response.json();
       errorMessage = error.error || error.message || errorMessage;
-    } catch (parseError) {
+    } catch (_parseError) {
       // Jika response bukan JSON, gunakan statusText
       errorMessage = response.statusText || `Error: ${response.status}`;
     }

@@ -8,7 +8,6 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
@@ -37,7 +36,7 @@ export function AutocompleteInput({
   placeholder = "Type to search...",
   disabled = false,
   className,
-  label,
+  label: _label,
   required = false,
 }: AutocompleteInputProps) {
   const [open, setOpen] = React.useState(false);

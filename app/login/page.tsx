@@ -42,7 +42,7 @@ export default function LoginPage() {
       } else {
         setError("Invalid email or password");
       }
-    } catch (err) {
+    } catch (_err) {
       setError("An error occurred during login");
     } finally {
       setLoading(false);

@@ -45,7 +45,7 @@ interface RecordSheetManagementProps {
 
 export function RecordSheetManagement({
   certificateId,
-  containerNumber,
+  containerNumber: _containerNumber,
   commodity,
   certificates,
 }: RecordSheetManagementProps) {

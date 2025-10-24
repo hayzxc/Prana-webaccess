@@ -24,7 +24,7 @@ interface FumigationProgressProps {
 }
 
 export function FumigationProgress({ containerNumber, commodity, treatmentType, onComplete }: FumigationProgressProps) {
-  const [steps, setSteps] = useState<FumigationStep[]>([
+  const [steps, _setSteps] = useState<FumigationStep[]>([
     {
       id: "preparation",
       name: "Persiapan & Inspeksi",
@@ -166,7 +166,7 @@ export function FumigationProgress({ containerNumber, commodity, treatmentType, 
 
       {/* Steps */}
       <div className="space-y-4">
-        {steps.map((step, index) => (
+        {steps.map((step, _index) => (
           <Card key={step.id} className={`${step.status === "active" ? "ring-2 ring-blue-500" : ""}`}>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">

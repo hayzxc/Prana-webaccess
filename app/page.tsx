@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Navbar from "@/components/navbar";
-import { CompanyLogo } from "@/components/company-logo";
 import { FumigationServiceModal } from "@/components/fumigation-service-modal";
 import { ConsultationModal } from "@/components/consultation-modal";
 import {
@@ -28,7 +27,7 @@ import {
 import { Footer } from "@/components/footer";
 
 export default function HomePage() {
-  const [stats, setStats] = useState({
+  const [_stats, _setStats] = useState({
     certificates: 0,
     clients: 0,
     experience: 0,

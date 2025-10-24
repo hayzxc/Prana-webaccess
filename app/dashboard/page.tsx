@@ -19,8 +19,6 @@ import { UserMenu } from "@/components/user-menu";
 import { RecordSheetViewer } from "@/components/record-sheet-viewer";
 import { ContainerTracking } from "@/components/container-tracking";
 import { FumigationTrackingProgress } from "@/components/fumigation-tracking-progress";
-import { getAllRecordSheets } from "@/lib/record-sheets";
-import { getFumigationTrackingsByEmail } from "@/lib/fumigation-tracking";
 import {
   Certificate,
   FumigationTracking,
@@ -253,7 +251,7 @@ export default function UserDashboard() {
     (cert) => cert.serviceType === "FUMIGATION"
   );
 
-  const otherCertificates = certificates?.filter(
+  const _otherCertificates = certificates?.filter(
     (cert) => cert.serviceType !== "FUMIGATION"
   );
 

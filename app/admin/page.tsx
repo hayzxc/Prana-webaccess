@@ -43,7 +43,6 @@ import { FileUpload } from "@/components/file-upload";
 import { UserManagement } from "@/components/user-management";
 import { UserMenu } from "@/components/user-menu";
 import { RecordSheetManagement } from "@/components/record-sheet-management";
-import { getAllRecordSheets } from "@/lib/record-sheets";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
 import toast from "react-hot-toast";
 
@@ -74,7 +73,7 @@ import { ProgressStatus } from "@/generated/prisma";
 import GenerateCertificatePage from "./generate-certificate-page";
 
 export default function AdminDashboard() {
-  const { user, loading: authLoading, getAllUsers, logout } = useAuth();
+  const { user, loading: authLoading, logout } = useAuth();
   const router = useRouter();
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [fumigationTrackings, setFumigationTrackings] = useState<
