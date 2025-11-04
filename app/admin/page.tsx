@@ -754,7 +754,7 @@ export default function AdminDashboard() {
                   <FileUpload
                     onFileSelect={setSelectedFile}
                     accept=".pdf,.jpg,.jpeg,.png"
-                    maxSize={10}
+                    maxSize={15}
                     disabled={uploading}
                   />
 
@@ -1024,7 +1024,7 @@ export default function AdminDashboard() {
                       <FileUpload
                         onFileSelect={setPhytoFile}
                         accept=".pdf,.jpg,.jpeg,.png"
-                        maxSize={10}
+                        maxSize={15}
                         disabled={uploading}
                       />
                       <div className="text-center text-prana-gray">atau</div>

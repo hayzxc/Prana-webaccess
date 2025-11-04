@@ -16,6 +16,17 @@ export const POST = withAdminAuth(async (request) => {
     );
   }
 
+  const MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024; // 15 MB limit for certificates
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: "File size exceeds the 15 MB limit for certificates",
+      },
+      { status: 400 }
+    );
+  }
+
   try {
     // Use the UTApi to upload the file
     const response = await utapi.uploadFiles(file);
