@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,6 +13,8 @@ import {
 import Navbar from "@/components/navbar";
 import { FumigationServiceModal } from "@/components/fumigation-service-modal";
 import { ConsultationModal } from "@/components/consultation-modal";
+import AOS from "aos";
+import "aos/dist/aos.css";
 import {
   Shield,
   CheckCircle,
@@ -25,9 +28,10 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Footer } from "@/components/footer";
+import { TemplateDownloadModal } from "@/components/template-download-modal";
 
 export default function HomePage() {
-  const [_stats, _setStats] = useState({
+  const [stats, setStats] = useState({
     certificates: 0,
     clients: 0,
     experience: 0,
@@ -37,6 +41,7 @@ export default function HomePage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFumigationModalOpen, setIsFumigationModalOpen] = useState(false);
   const [isConsultationModalOpen, setIsConsultationModalOpen] = useState(false);
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
 
   const fumigationImages = [
     {
@@ -69,6 +74,8 @@ export default function HomePage() {
 
   useEffect(() => {
     // Animate counters
+    const timers: Array<ReturnType<typeof setInterval>> = [];
+
     const animateCounter = (
       target: number,
       setter: (value: number) => void
@@ -78,28 +85,44 @@ export default function HomePage() {
       const timer = setInterval(() => {
         current += increment;
         if (current >= target) {
-          setter(target);
+          setter(Math.round(target));
           clearInterval(timer);
         } else {
           setter(Math.floor(current));
         }
       }, 30);
+      timers.push(timer);
     };
 
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       animateCounter(5000, (value) =>
         setStats((prev) => ({ ...prev, certificates: value }))
       );
       animateCounter(500, (value) =>
         setStats((prev) => ({ ...prev, clients: value }))
       );
-      animateCounter(15, (value) =>
+      animateCounter(20, (value) =>
         setStats((prev) => ({ ...prev, experience: value }))
       );
       animateCounter(99, (value) =>
         setStats((prev) => ({ ...prev, success: value }))
       );
     }, 500);
+
+    return () => {
+      clearTimeout(timeoutId);
+      timers.forEach((timer) => clearInterval(timer));
+    };
+  }, []);
+
+  useEffect(() => {
+    // Initialize AOS with a small delay to ensure DOM is ready
+    setTimeout(() => {
+      AOS.init({
+        duration: 1000,
+        once: true,
+      });
+    }, 100);
   }, []);
 
   return (
@@ -108,10 +131,13 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <section className="relative bg-prana-navy text-white py-32 overflow-hidden">
-        <img
+        <Image
           className="absolute left-0 right-0 top-0 bottom-0 object-cover bg-center opacity-30 z-[1] pointer-events-none"
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/fumigation-process.png-Afp7mG9XauUSiiHByIlk9VXoHkpwSo.jpeg"
-          alt=""
+          alt="Latar belakang proses fumigasi"
+          fill
+          priority
+          sizes="100vw"
         />
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="container mx-auto px-6 relative z-10">
@@ -142,6 +168,7 @@ export default function HomePage() {
               <Button
                 size="lg"
                 className="bg-white text-prana-navy hover:bg-blue-50 font-semibold px-8 py-4"
+                onClick={() => window.location.href = "/services"}
               >
                 Layanan Fumigasi
               </Button>
@@ -153,6 +180,26 @@ export default function HomePage() {
               >
                 Konsultasi Gratis
               </Button>
+              <Button
+                size="lg"
+                className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-8 py-4"
+                onClick={() => window.open("https://cek-kontainer.my.id/", "_blank", "noopener,noreferrer")}
+              >
+                <CheckCircle className="w-5 h-5 mr-2" />
+                Cek Kontainer
+              </Button>
+            </div>
+
+            <div data-aos="fade-up" data-aos-delay="500" className="mb-16">
+              <Button
+                onClick={() => setIsTemplateModalOpen(true)}
+                variant="default"
+                size="sm"
+                className="bg-white text-prana-navy hover:bg-blue-50 gap-2 font-semibold"
+              >
+                <FileText className="w-4 h-4" />
+                Download Template Form
+              </Button>
             </div>
 
             {/* Stats */}
@@ -162,27 +209,35 @@ export default function HomePage() {
               data-aos-delay="600"
             >
               <div className="text-center">
-                <div className="text-4xl md:text-5xl font-bold mb-2">20+</div>
+                <div className="text-4xl md:text-5xl font-bold mb-2">
+                  {`${stats.certificates.toLocaleString()}+`}
+                </div>
                 <div className="text-blue-200 text-sm md:text-base">
-                  Tahun Pengalaman
+                  Sertifikat Diterbitkan
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-4xl md:text-5xl font-bold mb-2">500+</div>
+                <div className="text-4xl md:text-5xl font-bold mb-2">
+                  {`${stats.clients.toLocaleString()}+`}
+                </div>
                 <div className="text-blue-200 text-sm md:text-base">
                   Klien Aktif
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-4xl md:text-5xl font-bold mb-2">100%</div>
+                <div className="text-4xl md:text-5xl font-bold mb-2">
+                  {`${stats.experience}+`}
+                </div>
                 <div className="text-blue-200 text-sm md:text-base">
-                  Standar Internasional
+                  Tahun Pengalaman
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-4xl md:text-5xl font-bold mb-2">24/7</div>
+                <div className="text-4xl md:text-5xl font-bold mb-2">
+                  {`${stats.success}%`}
+                </div>
                 <div className="text-blue-200 text-sm md:text-base">
-                  Layanan Darurat
+                  Tingkat Keberhasilan
                 </div>
               </div>
             </div>
@@ -381,14 +436,19 @@ export default function HomePage() {
 
             {/* Image Carousel */}
             <div className="relative" data-aos="fade-left">
-              <div className="relative overflow-hidden rounded-2xl shadow-2xl">
-                <img
+              <div className="relative overflow-hidden rounded-2xl shadow-2xl h-[500px]">
+                <Image
                   src={
-                    fumigationImages[currentImageIndex].src ||
+                    fumigationImages[currentImageIndex]?.src ??
                     "/placeholder.svg"
                   }
-                  alt={fumigationImages[currentImageIndex].alt}
-                  className="w-full h-[500px] object-cover transition-all duration-500"
+                  alt={
+                    fumigationImages[currentImageIndex]?.alt ??
+                    "Ilustrasi proses fumigasi"
+                  }
+                  fill
+                  className="object-cover transition-all duration-500"
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
 
                 <button
@@ -412,11 +472,10 @@ export default function HomePage() {
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
-                      className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                        index === currentImageIndex
-                          ? "bg-white scale-125"
-                          : "bg-white/60 hover:bg-white/80"
-                      }`}
+                      className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentImageIndex
+                        ? "bg-white scale-125"
+                        : "bg-white/60 hover:bg-white/80"
+                        }`}
                       aria-label={`Lihat gambar ${index + 1}`}
                     />
                   ))}
@@ -459,7 +518,7 @@ export default function HomePage() {
               <div className="text-center">
                 <Mail className="w-8 h-8 mx-auto mb-4 text-blue-200" />
                 <div className="font-semibold mb-2">Email</div>
-                <div className="text-blue-200">info@pranaargentum.com.sg</div>
+                <div className="text-blue-200">prana.surabaya@gmail.com</div>
               </div>
               <div className="text-center">
                 <MapPin className="w-8 h-8 mx-auto mb-4 text-blue-200" />
@@ -491,6 +550,12 @@ export default function HomePage() {
       <ConsultationModal
         isOpen={isConsultationModalOpen}
         onClose={() => setIsConsultationModalOpen(false)}
+      />
+
+      {/* Template Download Modal */}
+      <TemplateDownloadModal
+        isOpen={isTemplateModalOpen}
+        onClose={() => setIsTemplateModalOpen(false)}
       />
     </div>
   );
