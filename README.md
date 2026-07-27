@@ -1,8 +1,4 @@
-Based on the analysis of the repository `https://github.com/hayzxc/Prana-webaccess`, it appears to be a **Next.js** project using **TypeScript**, **Prisma** (with PostgreSQL), and **Tailwind CSS**. It is designed as a certification and service management portal for "PT Prana Argentum".
 
-Here is a comprehensive `README.md` file tailored for the repository. It organizes the existing information into a professional and easy-to-read format.
-
-```markdown
 # PT Prana Argentum - Certification & Service Management Portal
 
 A comprehensive web application for managing fumigation certificates, phytosanitary certifications, and various inspection services for PT Prana Argentum.
