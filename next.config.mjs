@@ -8,6 +8,23 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    domains: [
+      "localhost",
+      "your-domain.com",
+      "hebbkx1anhila5yf.public.blob.vercel-storage.com",
+    ],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+        port: "",
+        pathname: "/storage/v1/object/public/**",
+      },
+      {
+        protocol: "https",
+        hostname: "hebbkx1anhila5yf.public.blob.vercel-storage.com",
+      },
+    ],
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {

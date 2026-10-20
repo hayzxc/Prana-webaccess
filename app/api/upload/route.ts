@@ -35,7 +35,7 @@ export const POST = withAdminAuth(async (request) => {
     // We need to check for errors.
     if (response.error) {
       console.error("UploadThing Error:", response.error.message);
-      throw new Error("Failed to upload file.");
+      throw new Error(`UploadThing failed: ${response.error.message}`);
     }
 
     // On success, the data object contains file details.

@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -14,33 +8,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ===================================
-//              MODELS
-// ===================================
-
-// Model untuk User
 model User {
-  id       String @id @default(cuid())
-  name     String
-  email    String @unique
-  password String // Ingat untuk hash password ini sebelum disimpan
-  role     Role   @default(USER)
-
-  createdAt DateTime @default(now())
-
-  // Relasi: Satu User bisa menerbitkan banyak sertifikat
+  id                  String               @id @default(cuid())
+  name                String
+  email               String               @unique
+  password            String
+  role                Role                 @default(USER)
+  createdAt           DateTime             @default(now())
   issuedCertificates  Certificate[]        @relation("IssuedBy")
-  // Relasi: Satu User (inspektur) bisa memiliki banyak record sheet
-  inspectedSheets     RecordSheet[]        @relation("InspectedBy")
-  // Relasi: Satu User bisa memiliki banyak tracking
   fumigationTrackings FumigationTracking[]
+  inspectedSheets     RecordSheet[]        @relation("InspectedBy")
 
-  @@map("users") // Nama tabel di database akan menjadi "users"
+  @@map("users")
 }
 
-// Model untuk Sertifikat Fumigasi
 model Certificate {
-  id                    String            @id @default(cuid())
+  id                    String              @id @default(cuid())
   name                  String
   recipientEmail        String
   recipientName         String
@@ -52,8 +35,8 @@ model Certificate {
   serviceType           String?
   location              String?
   description           String?
-  containerNumber       String?           @unique // Unique untuk tracking yang lebih mudah
-  noticeId              String?           @unique // Unique untuk tracking yang lebih mudah
+  containerNumber       String?             @unique
+  noticeId              String?             @unique
   woNumber              String?
   gassingTime           DateTime?
   aerationStartTime     DateTime?
@@ -61,21 +44,14 @@ model Certificate {
   progressStatus        ProgressStatus?
   phytosanitaryUrl      String?
   phytosanitaryFileName String?
-
-  // Relasi: Sertifikat ini diterbitkan oleh siapa
-  issuedBy   User?   @relation("IssuedBy", fields: [issuedById], references: [id], onDelete: Cascade)
-  issuedById String? @map("issued_by_id")
-
-  // Relasi: Satu sertifikat hanya punya satu record sheet
-  recordSheet RecordSheet?
-
-  // Relasi: Satu sertifikat hanya punya satu tracking
-  fumigationTracking FumigationTracking?
+  issuedById            String?             @map("issued_by_id")
+  issuedBy              User?               @relation("IssuedBy", fields: [issuedById], references: [id], onDelete: Cascade)
+  fumigationTracking    FumigationTracking?
+  recordSheet           RecordSheet?
 
   @@map("certificates")
 }
 
-// Model untuk Tracking Progres Fumigasi
 model FumigationTracking {
   id                 String         @id @default(cuid())
   containerNumber    String
@@ -91,21 +67,28 @@ model FumigationTracking {
   notes              String?
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
-
-  // Relasi: Tracking ini milik sertifikat mana (opsional jika tracking dibuat duluan)
-  certificate   Certificate? @relation(fields: [certificateId], references: [id], onDelete: Cascade)
-  certificateId String?      @unique @map("certificate_id")
-
-  // Relasi: Tracking ini di-assign ke user siapa (opsional)
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String? @map("user_id")
+  certificateId      String?        @unique @map("certificate_id")
+  userId             String?        @map("user_id")
+  shipperId          String?        @map("shipper_id")
+  certificate        Certificate?   @relation(fields: [certificateId], references: [id], onDelete: Cascade)
+  shipper            Shipper?       @relation(fields: [shipperId], references: [id], onDelete: Cascade)
+  user               User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("fumigation_trackings")
 }
 
-// Model untuk Catatan Detail Fumigasi
+model Shipper {
+  id        String               @id @default(cuid())
+  name      String
+  email     String               @unique
+  createdAt DateTime             @default(now())
+  trackings FumigationTracking[]
+
+  @@map("shippers")
+}
+
 model RecordSheet {
-  id              String   @id @default(cuid())
+  id              String       @id @default(cuid())
   commodity       String
   treatmentDate   DateTime
   gasType         String
@@ -114,37 +97,30 @@ model RecordSheet {
   temperature     String
   humidity        String?
   notes           String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
   containerNumber String?
-
-  // Relasi: Record sheet ini milik sertifikat mana (wajib, 1-to-1)
-  certificate   Certificate @relation(fields: [certificateId], references: [id], onDelete: Cascade)
-  certificateId String      @unique @map("certificate_id")
-
-  // Relasi: Record sheet ini diperiksa oleh siapa
-  inspector   User   @relation("InspectedBy", fields: [inspectorId], references: [id], onDelete: Cascade)
-  inspectorId String @map("inspector_id")
-
-  // Relasi: Satu record sheet punya banyak pembacaan gas
-  readings GasReading[]
+  fileUrl         String?
+  fileName        String?
+  certificateId   String?      @unique @map("certificate_id")
+  inspectorId     String       @map("inspector_id")
+  readings        GasReading[]
+  certificate     Certificate? @relation(fields: [certificateId], references: [id], onDelete: Cascade)
+  inspector       User         @relation("InspectedBy", fields: [inspectorId], references: [id], onDelete: Cascade)
 
   @@map("record_sheets")
 }
 
-// Model untuk setiap pembacaan gas
 model GasReading {
-  id            String   @id @default(cuid())
+  id            String      @id @default(cuid())
   timestamp     DateTime
   concentration Float
   temperature   Float
   humidity      Float?
   location      String
-  inspector     String // Nama inspektur saat pembacaan
-
-  // Relasi: Pembacaan ini milik record sheet mana
-  recordSheet   RecordSheet @relation(fields: [recordSheetId], references: [id], onDelete: Cascade)
+  inspector     String
   recordSheetId String      @map("record_sheet_id")
+  recordSheet   RecordSheet @relation(fields: [recordSheetId], references: [id], onDelete: Cascade)
 
   @@map("gas_readings")
 }
@@ -159,26 +135,31 @@ model GeneratedCertificate {
   clientName        String
 }
 
-// Model untuk Request Konsultasi Customer
 model ConsultationRequest {
-  id                String                    @id @default(cuid())
-  customerName      String
-  customerEmail     String
-  customerPhone     String?
-  companyName       String?
-  serviceType       ConsultationServiceType   @default(FUMIGATION)
-  message           String
-  status            ConsultationStatus        @default(PENDING)
-  adminNotes        String?
-  createdAt         DateTime                  @default(now())
-  updatedAt         DateTime                  @updatedAt
+  id            String                  @id @default(cuid())
+  customerName  String
+  customerEmail String
+  customerPhone String?
+  companyName   String?
+  serviceType   ConsultationServiceType @default(FUMIGATION)
+  message       String
+  status        ConsultationStatus      @default(PENDING)
+  adminNotes    String?
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
 
   @@map("consultation_requests")
 }
 
-// ===================================
-//               ENUMS
-// ===================================
+model ChatMessage {
+  id                    String   @id @default(cuid())
+  consultationRequestId String   @map("consultation_request_id")
+  sender                String
+  message               String
+  createdAt             DateTime @default(now())
+
+  @@map("chat_messages")
+}
 
 enum Role {
   ADMIN

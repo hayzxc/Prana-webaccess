@@ -4,6 +4,8 @@ import { withAdminAuth } from "@/lib/auth-middleware";
 import bcrypt from "bcryptjs";
 
 export const GET = withAdminAuth(async (request, user) => {
+  void request;
+  void user;
   const users = await prisma.user.findMany({
     select: { id: true, name: true, email: true, role: true, createdAt: true },
     orderBy: { name: "asc" },
@@ -12,7 +14,8 @@ export const GET = withAdminAuth(async (request, user) => {
 });
 
 // POST: Membuat pengguna baru
-export const POST = withAdminAuth(async (request) => {
+export const POST = withAdminAuth(async (request, user) => {
+  void user;
   const body = await request.json();
   const { name, email, password, role } = body;
 

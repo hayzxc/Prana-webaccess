@@ -36,7 +36,7 @@ export function AutocompleteInput({
   placeholder = "Type to search...",
   disabled = false,
   className,
-  label: _label,
+  label,
   required = false,
 }: AutocompleteInputProps) {
   const [open, setOpen] = React.useState(false);
@@ -44,6 +44,7 @@ export function AutocompleteInput({
   const [loading, setLoading] = React.useState(false);
   const [inputValue, setInputValue] = React.useState(value);
   const debounceTimer = React.useRef<NodeJS.Timeout>();
+  const inputId = React.useId();
 
   // Fetch suggestions from API
   const fetchSuggestions = React.useCallback(
@@ -114,10 +115,19 @@ export function AutocompleteInput({
 
   return (
     <div className={cn("relative", className)}>
+      {label && (
+        <label
+          htmlFor={inputId}
+          className="mb-1 block text-sm font-medium text-muted-foreground"
+        >
+          {label}
+        </label>
+      )}
       <Popover open={open && suggestions.length > 0} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <div className="relative">
             <Input
+              id={inputId}
               value={inputValue}
               onChange={(e) => handleInputChange(e.target.value)}
               onFocus={() => {
@@ -183,4 +193,3 @@ export function AutocompleteInput({
     </div>
   );
 }
-

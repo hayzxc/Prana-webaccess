@@ -42,7 +42,8 @@ export default function LoginPage() {
       } else {
         setError("Invalid email or password");
       }
-    } catch (_err) {
+    } catch (err) {
+      console.error("Login failed:", err);
       setError("An error occurred during login");
     } finally {
       setLoading(false);
@@ -123,19 +124,6 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-gray-600">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="font-medium mb-2">Demo Credentials:</p>
-              <div className="space-y-1 text-xs">
-                <p>
-                  <strong>Admin:</strong> admin@prana.com / admin123
-                </p>
-                <p>
-                  <strong>User:</strong> user@prana.com / user123
-                </p>
-              </div>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>

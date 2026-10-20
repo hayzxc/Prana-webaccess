@@ -251,10 +251,6 @@ export default function UserDashboard() {
     (cert) => cert.serviceType === "FUMIGATION"
   );
 
-  const _otherCertificates = certificates?.filter(
-    (cert) => cert.serviceType !== "FUMIGATION"
-  );
-
   return (
     <div className="min-h-screen prana-light-gray">
       <div className="container mx-auto px-6 py-8">
@@ -350,17 +346,17 @@ export default function UserDashboard() {
         </div>
 
         <Tabs defaultValue="certificates" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-white">
-            <TabsTrigger value="certificates" className="text-prana-navy">
+          <TabsList className="grid grid-flow-col auto-cols-min gap-2 overflow-x-auto bg-white p-1">
+            <TabsTrigger value="certificates" className="text-prana-navy shrink-0 min-w-[140px] text-center">
               Sertifikat Saya
             </TabsTrigger>
-            <TabsTrigger value="phytosanitary" className="text-prana-navy">
+            <TabsTrigger value="phytosanitary" className="text-prana-navy shrink-0 min-w-[140px] text-center">
               Phytosanitary
             </TabsTrigger>
-            <TabsTrigger value="tracking" className="text-prana-navy">
+            <TabsTrigger value="tracking" className="text-prana-navy shrink-0 min-w-[140px] text-center">
               Tracking Fumigasi
             </TabsTrigger>
-            <TabsTrigger value="recordsheets" className="text-prana-navy">
+            <TabsTrigger value="recordsheets" className="text-prana-navy shrink-0 min-w-[140px] text-center">
               Record Sheet
             </TabsTrigger>
           </TabsList>

@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,8 +24,10 @@ import {
   createGasReading,
   fetchUsers,
   deleteRecordSheet,
+  uploadFile,
 } from "@/lib/api-client";
 import { useAuth } from "@/lib/simple-backend-auth";
+import { FileUpload } from "@/components/file-upload";
 import {
   Select,
   SelectContent,
@@ -45,7 +47,7 @@ interface RecordSheetManagementProps {
 
 export function RecordSheetManagement({
   certificateId,
-  containerNumber: _containerNumber,
+  containerNumber,
   commodity,
   certificates,
 }: RecordSheetManagementProps) {
@@ -60,15 +62,18 @@ export function RecordSheetManagement({
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showAddReading, setShowAddReading] = useState(false);
   const [users, setUsers] = useState<SafeUser[] | []>([]);
+  const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const [formData, setFormData] = useState({
-    containerNumber: "",
+    containerNumber: containerNumber || "",
+    commodity: commodity || "",
     treatmentDate: new Date().toISOString().split("T")[0],
     gasType: "",
     concentration: "",
     exposureTime: "",
     temperature: "",
-    certificateId: "",
+    certificateId: certificateId || "",
     humidity: "",
     inspectorName: "",
     notes: "",
@@ -82,12 +87,7 @@ export function RecordSheetManagement({
     inspector: "",
   });
 
-  useEffect(() => {
-    loadRecordSheets();
-    loadUsers();
-  }, [certificateId]);
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     setIsLoading(true);
     try {
       const users = await fetchUsers();
@@ -98,9 +98,9 @@ export function RecordSheetManagement({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const loadRecordSheets = async () => {
+  const loadRecordSheets = useCallback(async () => {
     setIsLoading(true);
     try {
       const sheets = await fetchRecordSheets(certificateId);
@@ -111,15 +111,40 @@ export function RecordSheetManagement({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [certificateId]);
+
+  useEffect(() => {
+    loadRecordSheets();
+  }, [loadRecordSheets]);
+
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
+
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      certificateId,
+      containerNumber: containerNumber || "",
+      commodity: commodity || "",
+    }));
+  }, [certificateId, containerNumber, commodity]);
 
   const handleCreateSheet = async (e: React.FormEvent) => {
     e.preventDefault();
+    setUploading(true);
     try {
+      let fileData = null;
+      if (selectedFile) {
+        fileData = await uploadFile(selectedFile);
+      }
+
       const newSheetData = {
         ...formData,
-        commodity,
+        certificateId: formData.certificateId || undefined,
         treatmentDate: new Date(formData.treatmentDate),
+        fileUrl: fileData?.url,
+        fileName: fileData?.fileName,
       };
 
       const newSheetFromApi = await createRecordSheet(newSheetData);
@@ -130,24 +155,28 @@ export function RecordSheetManagement({
         inspector: { name: user?.name || "" },
       };
       // @ts-expect-error - Temporary type mismatch
-      setRecordSheets([...recordSheets, newSheetWithRelations]);
+      setRecordSheets([newSheetWithRelations, ...recordSheets]);
 
       setShowCreateForm(false);
       setFormData({
+        containerNumber: containerNumber || "",
+        commodity: commodity || "",
         treatmentDate: new Date().toISOString().split("T")[0],
         gasType: "",
-        containerNumber: "",
         concentration: "",
         exposureTime: "",
-        certificateId: "",
+        certificateId: certificateId || "",
         temperature: "",
         humidity: "",
         inspectorName: "",
         notes: "",
       });
+      setSelectedFile(null);
     } catch (error) {
       console.error("Failed to create record sheet:", error);
       toast.error(`Gagal membuat record sheet: ${(error as Error).message}`);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -521,6 +550,15 @@ export function RecordSheetManagement({
                 <Select
                   value={formData.certificateId}
                   onValueChange={(value) => {
+                    if (value === "none") {
+                      setFormData({
+                        ...formData,
+                        certificateId: "",
+                        containerNumber: "",
+                        commodity: "",
+                      });
+                      return;
+                    }
                     const selectedCert = certificates.find(
                       (cert) => cert.id === value
                     );
@@ -529,14 +567,16 @@ export function RecordSheetManagement({
                         ...formData,
                         certificateId: value,
                         containerNumber: selectedCert.containerNumber ?? "",
+                        // commodity might not be in certificate directly unless inferred
                       });
                     }
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Pilih Sertifikat" />
+                    <SelectValue placeholder="Pilih Sertifikat (Opsional)" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="none">-- Tanpa Sertifikat --</SelectItem>
                     {certificates.map((certificate) => (
                       <SelectItem key={certificate.id} value={certificate.id}>
                         {certificate.recipientEmail} -{" "}
@@ -547,13 +587,30 @@ export function RecordSheetManagement({
                 </Select>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
+                <div className="col-span-2 md:col-span-1">
                   <Label htmlFor="containerNumber">Nomor Kontainer</Label>
                   <Input
                     id="containerNumber"
                     type="text"
                     value={formData.containerNumber}
-                    readOnly
+                    onChange={(e) =>
+                      setFormData({ ...formData, containerNumber: e.target.value })
+                    }
+                    readOnly={!!formData.certificateId}
+                    className={formData.certificateId ? "bg-gray-100" : ""}
+                    required
+                  />
+                </div>
+                <div className="col-span-2 md:col-span-1">
+                  <Label htmlFor="commodity">Komoditas</Label>
+                  <Input
+                    id="commodity"
+                    type="text"
+                    value={formData.commodity}
+                    onChange={(e) =>
+                      setFormData({ ...formData, commodity: e.target.value })
+                    }
+                    placeholder="e.g. Coffee Beans"
                     required
                   />
                 </div>
@@ -635,6 +692,7 @@ export function RecordSheetManagement({
                   />
                 </div>
               </div>
+
               <div>
                 <Label htmlFor="inspectorName">Nama Inspector</Label>
                 <Select
@@ -655,6 +713,7 @@ export function RecordSheetManagement({
                   </SelectContent>
                 </Select>
               </div>
+
               <div>
                 <Label htmlFor="notes">Catatan</Label>
                 <Input
@@ -666,12 +725,26 @@ export function RecordSheetManagement({
                   placeholder="Catatan tambahan (opsional)"
                 />
               </div>
+
+              <div className="col-span-2">
+                <Label>Upload File (Opsional)</Label>
+                <FileUpload
+                  onFileSelect={setSelectedFile}
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  maxSize={5}
+                  disabled={uploading}
+                />
+              </div>
+
               <div className="flex gap-2">
-                <Button type="submit">Buat Record Sheet</Button>
+                <Button type="submit" disabled={uploading}>
+                  {uploading ? "Menyimpan..." : "Buat Record Sheet"}
+                </Button>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setShowCreateForm(false)}
+                  disabled={uploading}
                 >
                   Batal
                 </Button>
@@ -697,6 +770,18 @@ export function RecordSheetManagement({
                     {new Date(sheet.treatmentDate).toLocaleDateString("id-ID")}{" "}
                     • {sheet.gasType}
                   </p>
+                  {sheet.fileUrl && (
+                    <a
+                      href={sheet.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-600 hover:underline flex items-center mt-1"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Download className="w-3 h-3 mr-1" />
+                      View File: {sheet.fileName || "Download"}
+                    </a>
+                  )}
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-medium">

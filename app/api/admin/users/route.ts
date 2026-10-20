@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 
 // Mock users data - replace with actual database query
 const mockUsers = [
@@ -7,7 +7,7 @@ const mockUsers = [
   { id: "3", name: "Jane Smith", email: "jane@example.com", role: "user" as const },
 ]
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // In a real app, you would:
     // 1. Verify admin authentication

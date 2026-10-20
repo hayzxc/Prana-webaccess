@@ -3,15 +3,17 @@ import jwt from "jsonwebtoken";
 import prisma from "./prisma";
 import { ApiError } from "./api-response";
 import { handleApiError } from "./error-handler";
+// @ts-ignore - next-auth/jwt exports getToken but TS may not recognize it in some versions
+import { getToken } from "next-auth/jwt";
 
 interface JwtPayload {
   userId: string;
   email: string;
   role: "ADMIN" | "USER";
-
   iat: number;
   exp: number;
 }
+
 export interface AuthUser {
   id: string;
   email: string;
@@ -20,37 +22,54 @@ export interface AuthUser {
 }
 
 export async function validateAuth(request: NextRequest): Promise<AuthUser> {
+  // 1. Try custom auth-token
   const token = request.cookies.get("auth-token")?.value;
 
-  if (!token) {
-    throw new ApiError(401, "Authentication token is missing");
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || "supersecretkey123") as JwtPayload;
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.userId },
+        select: { id: true, email: true, role: true, name: true },
+      });
+
+      if (user) {
+        return {
+          id: user.id,
+          email: user.email,
+          role: user.role as "ADMIN" | "USER",
+          name: user.name || "",
+        };
+      }
+    } catch {
+      // Token invalid, try NextAuth
+    }
   }
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+  // 2. Try NextAuth token
+  const nextAuthToken = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-    });
+  if (nextAuthToken) {
+    const userId = (nextAuthToken.sub || nextAuthToken.id) as string;
 
-    console.log("USER MNIH", user);
+    if (userId) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, email: true, role: true, name: true },
+      });
 
-    if (!user) {
-      throw new ApiError(401, "User not found");
+      if (user) {
+        return {
+          id: user.id,
+          email: user.email,
+          role: user.role as "ADMIN" | "USER",
+          name: user.name || "",
+        };
+      }
     }
-
-    const { password, ...userWithoutPassword } = user;
-
-    return {
-      ...userWithoutPassword,
-      role: user.role as "ADMIN" | "USER",
-    };
-  } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError) {
-      throw new ApiError(401, "Invalid authentication token");
-    }
-    throw error;
   }
+
+  throw new ApiError(401, "Authentication token is missing or invalid");
 }
 
 export async function requireAuth(request: NextRequest): Promise<AuthUser> {

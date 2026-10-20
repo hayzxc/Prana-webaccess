@@ -6,18 +6,19 @@ import { withAdminAuth, withAuth } from "@/lib/auth-middleware";
 export const GET = withAuth(async (request: NextRequest) => {
   const certificateId = request.nextUrl.searchParams.get("certificateId");
 
-  //   if (!certificateId) {
-  //     return NextResponse.json(
-  //       { success: false, message: "Certificate ID is required" },
-  //       { status: 400 }
-  //     );
-  //   }
-
   const recordSheets = await prisma.recordSheet.findMany({
-    // where: { certificateId },
+    where: certificateId ? { certificateId } : undefined,
     include: {
       readings: { orderBy: { timestamp: "asc" } },
       inspector: { select: { id: true, name: true } },
+      certificate: {
+        select: {
+          name: true,
+          recipientName: true,
+          recipientEmail: true,
+          containerNumber: true
+        }
+      }
     },
     orderBy: { treatmentDate: "desc" },
   });
@@ -29,12 +30,15 @@ export const GET = withAuth(async (request: NextRequest) => {
 export const POST = withAdminAuth(async (request: NextRequest, user) => {
   const body = await request.json();
 
-  const { inspectorName, ...restOfBody } = body;
+  void user;
+
+  const { inspectorName, certificateId, ...restOfBody } = body;
 
   const recordSheet = await prisma.recordSheet.create({
     data: {
       ...restOfBody,
       inspectorId: inspectorName,
+      certificateId: certificateId && certificateId !== "" ? certificateId : undefined,
     },
   });
 

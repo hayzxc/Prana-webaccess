@@ -68,9 +68,11 @@ import {
   fetchConsultationRequests,
   updateConsultationRequest,
   deleteConsultationRequest,
+  createShipper,
 } from "@/lib/api-client";
 import { ProgressStatus } from "@/generated/prisma";
 import GenerateCertificatePage from "./generate-certificate-page";
+import { AdminChat } from "@/components/admin/admin-chat";
 
 export default function AdminDashboard() {
   const { user, loading: authLoading, logout } = useAuth();
@@ -141,52 +143,22 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Ambil semua data dari API secara paralel dengan timeout
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout')), 15000)
-      );
-
-      const [certs, trackings, users, sheets, consultations] = await Promise.race([
-        Promise.all([
-          fetchCertificates().catch(err => {
-            console.error("Error fetching certificates:", err);
-            return [];
-          }),
-          fetchFumigationTrackings().catch(err => {
-            console.error("Error fetching fumigation trackings:", err);
-            return [];
-          }),
-          fetchUsers().catch(err => {
-            console.error("Error fetching users:", err);
-            return [];
-          }),
-          fetchRecordSheets("").catch(err => {
-            console.error("Error fetching record sheets:", err);
-            return [];
-          }),
-          fetchConsultationRequests().catch(err => {
-            console.error("Error fetching consultation requests:", err);
-            return [];
-          }),
-        ]),
-        timeoutPromise
-      ]) as [Certificate[], FumigationTracking[], SafeUser[], RecordSheetWithReadings[], ConsultationRequest[]];
+      // Fetch all data in parallel
+      const [certs, trackings, users, sheets, consultations] = await Promise.all([
+        fetchCertificates().catch(() => []),
+        fetchFumigationTrackings().catch(() => []),
+        fetchUsers().catch(() => []),
+        fetchRecordSheets("").catch(() => []),
+        fetchConsultationRequests().catch(() => []),
+      ]);
 
       setCertificates(certs || []);
       setFumigationTrackings(trackings || []);
       setAllUsers(users || []);
       setRecordSheets(sheets || []);
       setConsultationRequests(consultations || []);
-      
-      // Show success message if at least one API succeeded
-      if (certs.length > 0 || trackings.length > 0 || users.length > 0 || sheets.length > 0 || consultations.length > 0) {
-        toast.success("Data admin berhasil dimuat");
-      }
     } catch (error) {
-      console.error("Error fetching data:", error);
       toast.error("Gagal memuat data dari server. Silakan refresh halaman.");
-      
-      // Set empty arrays as fallback
       setCertificates([]);
       setFumigationTrackings([]);
       setAllUsers([]);
@@ -199,7 +171,7 @@ export default function AdminDashboard() {
 
   const handleUploadCertificate = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validasi field yang wajib diisi
     if (!certName || !recipientEmail || !recipientName || !serviceType) {
       toast.error("Please fill all required fields");
@@ -354,6 +326,16 @@ export default function AdminDashboard() {
     e.preventDefault();
     setUploading(true);
     try {
+      // Ensure shipper exists by email (create or get)
+      let shipperId: string | undefined = undefined;
+      if (trackingCompanyEmail) {
+        const shipper = await createShipper({
+          name: trackingCompanyName || trackingCompanyEmail,
+          email: trackingCompanyEmail,
+        });
+        shipperId = shipper.id;
+      }
+
       const newTrackingData: Partial<FumigationTracking> = {
         containerNumber: trackingContainerNumber.toUpperCase(),
         noticeId: trackingNoticeId.toUpperCase(),
@@ -366,6 +348,7 @@ export default function AdminDashboard() {
           : undefined,
         progressStatus: trackingProgressStatus,
         notes: trackingNotes || undefined,
+        shipperId,
       };
 
       const newTrackingFromApi = await createFumigationTracking(
@@ -621,27 +604,30 @@ export default function AdminDashboard() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="certificates" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7 bg-white">
-            <TabsTrigger value="certificates" className="text-prana-navy">
+          <TabsList className="grid grid-flow-col auto-cols-min gap-2 overflow-x-auto bg-white h-auto p-1">
+            <TabsTrigger value="certificates" className="text-prana-navy shrink-0 min-w-[140px] text-center">
               Manajemen Sertifikat
             </TabsTrigger>
-            <TabsTrigger value="phytosanitary" className="text-prana-navy">
+            <TabsTrigger value="phytosanitary" className="text-prana-navy shrink-0 min-w-[140px] text-center">
               Phytosanitary
             </TabsTrigger>
-            <TabsTrigger value="fumigation" className="text-prana-navy">
+            <TabsTrigger value="fumigation" className="text-prana-navy shrink-0 min-w-[140px] text-center">
               Tracking Fumigasi
             </TabsTrigger>
-            <TabsTrigger value="users" className="text-prana-navy">
+            <TabsTrigger value="users" className="text-prana-navy shrink-0 min-w-[140px] text-center">
               Manajemen Pengguna
             </TabsTrigger>
-            <TabsTrigger value="recordsheets" className="text-prana-navy">
+            <TabsTrigger value="recordsheets" className="text-prana-navy shrink-0 min-w-[140px] text-center">
               Record Sheet
             </TabsTrigger>
-            <TabsTrigger value="generate-certificate" className="text-prana-navy">
+            <TabsTrigger value="generate-certificate" className="text-prana-navy shrink-0 min-w-[140px] text-center">
               Generate Certificate
             </TabsTrigger>
-            <TabsTrigger value="consultation-requests" className="text-prana-navy">
+            <TabsTrigger value="consultation-requests" className="text-prana-navy shrink-0 min-w-[140px] text-center">
               Request Konsultasi
+            </TabsTrigger>
+            <TabsTrigger value="livechat" className="text-prana-navy shrink-0 min-w-[140px] text-center">
+              Live Chat
             </TabsTrigger>
           </TabsList>
 
@@ -738,7 +724,7 @@ export default function AdminDashboard() {
                         placeholder="Tanjung Perak Port"
                       />
                     </div>
-                  </div>                  
+                  </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="description">Deskripsi</Label>
@@ -845,18 +831,18 @@ export default function AdminDashboard() {
                                 {cert.serviceType === "FUMIGATION"
                                   ? "Fumigasi"
                                   : cert.serviceType === "ISPM"
-                                  ? "ISPM (Phytosanitary)"
-                                  : cert.serviceType === "CARGO_SURVEY"
-                                  ? "Cargo Survey"
-                                  : cert.serviceType === "MARINE_SURVEY"
-                                  ? "Marine Survey"
-                                  : cert.serviceType === "PRESHIPMENT"
-                                  ? "Pre-shipment Inspection"
-                                  : cert.serviceType === "INSURANCE"
-                                  ? "Insurance Survey"
-                                  : cert.serviceType === "QUALITY_CONTROL"
-                                  ? "Quality Control"
-                                  : cert.serviceType || "General"}
+                                    ? "ISPM (Phytosanitary)"
+                                    : cert.serviceType === "CARGO_SURVEY"
+                                      ? "Cargo Survey"
+                                      : cert.serviceType === "MARINE_SURVEY"
+                                        ? "Marine Survey"
+                                        : cert.serviceType === "PRESHIPMENT"
+                                          ? "Pre-shipment Inspection"
+                                          : cert.serviceType === "INSURANCE"
+                                            ? "Insurance Survey"
+                                            : cert.serviceType === "QUALITY_CONTROL"
+                                              ? "Quality Control"
+                                              : cert.serviceType || "General"}
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -1417,19 +1403,19 @@ export default function AdminDashboard() {
                                     request.status === "PENDING"
                                       ? "default"
                                       : request.status === "IN_PROGRESS"
-                                      ? "secondary"
-                                      : request.status === "COMPLETED"
-                                      ? "default"
-                                      : "destructive"
+                                        ? "secondary"
+                                        : request.status === "COMPLETED"
+                                          ? "default"
+                                          : "destructive"
                                   }
                                   className={
                                     request.status === "PENDING"
                                       ? "bg-yellow-100 text-yellow-800"
                                       : request.status === "IN_PROGRESS"
-                                      ? "bg-blue-100 text-blue-800"
-                                      : request.status === "COMPLETED"
-                                      ? "bg-green-100 text-green-800"
-                                      : "bg-red-100 text-red-800"
+                                        ? "bg-blue-100 text-blue-800"
+                                        : request.status === "COMPLETED"
+                                          ? "bg-green-100 text-green-800"
+                                          : "bg-red-100 text-red-800"
                                   }
                                 >
                                   {request.status === "PENDING" && (
@@ -1458,7 +1444,7 @@ export default function AdminDashboard() {
                                   )}
                                 </Badge>
                               </div>
-                              
+
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
                                   <p className="text-sm text-prana-gray">Email</p>
@@ -1543,6 +1529,10 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="livechat" className="space-y-6">
+            <AdminChat />
           </TabsContent>
         </Tabs>
       </div>

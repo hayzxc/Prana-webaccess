@@ -133,6 +133,7 @@ export function getRecordSheetsByCertificateId(certificateId: string): RecordShe
 export function getRecordSheetsByUser(userId: string): RecordSheet[] {
   // In a real implementation, this would filter by user ID
   // For now, return all record sheets as mock data
+  void userId;
   return recordSheets
 }
 

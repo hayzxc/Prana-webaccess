@@ -39,18 +39,20 @@ export const POST = asyncHandler(async (request: NextRequest) => {
   }
 
   // 4. Jika valid, buat JWT (JSON Web Token)
+  console.log("Login successful for:", user.email, "ID:", user.id);
+
   const tokenPayload = {
     userId: user.id,
     email: user.email,
     role: user.role,
   };
 
-  const token = jwt.sign(tokenPayload, process.env.JWT_SECRET!, {
+  const token = jwt.sign(tokenPayload, process.env.JWT_SECRET || "supersecretkey123", {
     expiresIn: "7d", // Token berlaku selama 7 hari
   });
-
   // 5. Siapkan data user untuk response (hapus password)
-  const { password: _, ...userData } = user;
+  const { password: _password, ...userData } = user;
+  void _password;
 
   // 6. Set token di httpOnly cookie untuk keamanan
   const cookieStore = cookies();

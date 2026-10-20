@@ -35,17 +35,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // Check for stored user session
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
+    const restoreSession = async () => {
       try {
-        setUser(JSON.parse(storedUser));
+        const response = await fetch("/api/auth/me", {
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          const sessionUser = result.data;
+          setUser(sessionUser);
+          localStorage.setItem("user", JSON.stringify(sessionUser));
+          return;
+        }
       } catch (error) {
-        console.error("Error parsing stored user:", error);
-        localStorage.removeItem("user");
+        console.error("Session restore failed:", error);
       }
-    }
-    setLoading(false);
+
+      setUser(null);
+      localStorage.removeItem("user");
+    };
+
+    restoreSession().finally(() => setLoading(false));
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {

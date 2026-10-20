@@ -80,6 +80,13 @@ export type Certificate = {
 };
 
 // Tipe dasar untuk model FumigationTracking
+export type Shipper = {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: Date;
+};
+
 export type FumigationTracking = {
   id: string;
   containerNumber: string;
@@ -97,6 +104,8 @@ export type FumigationTracking = {
   updatedAt: Date;
   certificateId: string | null;
   userId: string | null;
+  shipperId?: string | null;
+  shipper?: Shipper | null;
 };
 
 // Tipe dasar untuk model RecordSheet
@@ -113,8 +122,10 @@ export type RecordSheet = {
   notes: string | null;
   createdAt: Date;
   updatedAt: Date;
-  certificateId: string;
+  certificateId: string | null;
   inspectorId: string;
+  fileUrl: string | null;
+  fileName: string | null;
 };
 
 // Tipe dasar untuk model GasReading

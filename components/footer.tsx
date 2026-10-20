@@ -35,11 +35,20 @@ export const Footer = () => {
           </div>
 
           <div data-aos="fade-up" data-aos-delay="400">
-            <h4 className="font-semibold mb-4">Portal</h4>
+            <h4 className="font-semibold mb-4">Portal & Verifikasi</h4>
             <ul className="space-y-2 text-sm text-slate-400">
+              <li>
+                <a
+                  href="https://cek-kontainer.my.id/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white transition-colors flex items-center gap-1.5"
+                >
+                  Verifikasi Kontainer (cek-kontainer.my.id)
+                </a>
+              </li>
               <li>Login Portal</li>
               <li>Cek Sertifikat</li>
-              <li>Download</li>
               <li>Bantuan</li>
             </ul>
           </div>

@@ -72,6 +72,11 @@ export const FumigationTracking: React.FC<Props> = ({
                     <p className="text-xs text-prana-blue">
                       {tracking.companyEmail}
                     </p>
+                    {tracking.shipper && (
+                      <p className="text-xs text-prana-gray mt-1">
+                        <strong>Shipper:</strong> {tracking.shipper.name} ({tracking.shipper.email})
+                      </p>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <Select
