@@ -163,7 +163,7 @@ export function FumigationServiceModal({ isOpen, onClose }: FumigationServiceMod
                   </div>
                   <div className="text-sm">
                     <span className="font-semibold text-gray-700">Email:</span>
-                    <span className="ml-2 text-prana-navy">info@pranaargentum.com.sg</span>
+                    <span className="ml-2 text-prana-navy">prana.surabaya@gmail.com</span>
                   </div>
                   <div className="text-sm">
                     <span className="font-semibold text-gray-700">Waktu Operasional:</span>

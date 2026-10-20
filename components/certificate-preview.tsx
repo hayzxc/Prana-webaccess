@@ -42,10 +42,15 @@ export function CertificatePreview({ certificate }: CertificatePreviewProps) {
     });
   };
 
-  const _statusProps = getStatusProps(certificate.status);
+  const statusProps = getStatusProps(certificate.status);
 
   return (
     <div className="space-y-3 mb-4">
+      <span
+        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${statusProps.className}`}
+      >
+        {statusProps.text}
+      </span>
       <div className="flex items-center text-sm text-gray-600">
         <Building className="w-4 h-4 mr-2 flex-shrink-0" />
         <span className="truncate" title={certificate.recipientName}>

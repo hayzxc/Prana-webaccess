@@ -122,7 +122,7 @@ export function UserManagement() {
             <p className="font-medium">Error loading users</p>
             <p className="text-sm mt-1">{error}</p>
             <Button
-              onClick={fetchUsers}
+              onClick={loadUsers}
               className="mt-4 bg-transparent"
               variant="outline"
             >

@@ -25,17 +25,36 @@ export const PATCH = withAdminAuth(
 
       const now = new Date();
 
+      // Fetch existing record so we don't overwrite existing timestamps unintentionally
+      const existing = await prisma.fumigationTracking.findUnique({ where: { id } });
+
       switch (progressStatus) {
         case "GASSING":
-          updateData.gassingTime = now;
+          // Only set gassingTime if it wasn't set previously
+          if (!existing?.gassingTime) {
+            updateData.gassingTime = now;
+          }
           break;
 
         case "AERATION":
-          updateData.aerationStartTime = now;
+          // Only set aerationStartTime if it wasn't set previously
+          if (!existing?.aerationStartTime) {
+            updateData.aerationStartTime = now;
+          }
           break;
 
         case "READY":
-          updateData.containerReadyTime = now;
+          // Only set containerReadyTime if it wasn't set previously
+          if (!existing?.containerReadyTime) {
+            if (existing?.gassingTime) {
+              // Calculate from gassingTime + 27 hours
+              const gassingDate = new Date(existing.gassingTime);
+              const readyDate = new Date(gassingDate.getTime() + 27 * 60 * 60 * 1000);
+              updateData.containerReadyTime = readyDate;
+            } else {
+              updateData.containerReadyTime = now;
+            }
+          }
           break;
 
         case "PENDING":

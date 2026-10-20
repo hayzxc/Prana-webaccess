@@ -12,6 +12,23 @@ export async function GET(request: NextRequest) {
     const containerNumber = searchParams.get("containerNumber");
     const noticeId = searchParams.get("noticeId");
 
+    // If request asks for companyEmail (public listing of all trackings for a shipper)
+    const companyEmail = searchParams.get("companyEmail");
+    if (companyEmail && !containerNumber && !noticeId) {
+      const trackings = await prisma.fumigationTracking.findMany({
+        where: {
+          OR: [
+            { companyEmail: companyEmail.toLowerCase().trim() },
+            { shipper: { email: companyEmail.toLowerCase().trim() } },
+          ],
+        },
+        orderBy: { createdAt: "desc" },
+        include: { shipper: true },
+      });
+
+      return NextResponse.json({ success: true, data: trackings });
+    }
+
     if (!containerNumber || !noticeId) {
       return NextResponse.json(
         {
@@ -27,6 +44,7 @@ export async function GET(request: NextRequest) {
         containerNumber: containerNumber.toUpperCase().trim(),
         noticeId: noticeId.toUpperCase().trim(),
       },
+      include: { shipper: true },
     });
 
     if (!trackingData) {

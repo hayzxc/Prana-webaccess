@@ -180,7 +180,8 @@ const handleResponse = async (response: Response) => {
     try {
       const error = await response.json();
       errorMessage = error.error || error.message || errorMessage;
-    } catch (_parseError) {
+    } catch (parseError) {
+      console.error("Failed to parse error response:", parseError);
       // Jika response bukan JSON, gunakan statusText
       errorMessage = response.statusText || `Error: ${response.status}`;
     }
@@ -255,6 +256,25 @@ export const createFumigationTracking = async (
   data: Partial<FumigationTracking>
 ): Promise<FumigationTracking> => {
   const response = await fetch("/api/fumigation-trackings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  const result = await handleResponse(response);
+  return result.data;
+};
+
+// ===================================
+//             SHIPPERS API
+// ===================================
+export const fetchShippers = async (): Promise<{ id: string; name: string; email: string }[]> => {
+  const response = await fetch("/api/shippers");
+  const result = await handleResponse(response);
+  return result.data;
+};
+
+export const createShipper = async (data: { name?: string; email: string }) => {
+  const response = await fetch("/api/shippers", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -404,6 +424,16 @@ export const searchFumigationTracking = async (
     return null;
   }
 
+  const result = await handleResponse(response);
+  return result.data;
+};
+
+export const searchTrackingsByCompanyEmail = async (
+  companyEmail: string
+): Promise<FumigationTracking[]> => {
+  const response = await fetch(`/api/tracking?companyEmail=${encodeURIComponent(
+    companyEmail
+  )}`);
   const result = await handleResponse(response);
   return result.data;
 };

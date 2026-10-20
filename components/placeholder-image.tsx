@@ -1,3 +1,4 @@
+import Image from "next/image"
 import { cn } from "@/lib/utils"
 
 interface PlaceholderImageProps {
@@ -18,7 +19,7 @@ export function PlaceholderImage({
   const src = `/placeholder.svg?height=${height}&width=${width}&query=${query}`
 
   return (
-    <img
+    <Image
       src={src || "/placeholder.svg"}
       alt={alt}
       width={width}

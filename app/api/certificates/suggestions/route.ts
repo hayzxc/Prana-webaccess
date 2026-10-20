@@ -4,6 +4,7 @@ import { withAuth } from "@/lib/auth-middleware";
 
 // GET: Mendapatkan suggestions untuk autocomplete
 export const GET = withAuth(async (request: NextRequest, user) => {
+  void user;
   try {
     const { searchParams } = new URL(request.url);
     const field = searchParams.get("field");

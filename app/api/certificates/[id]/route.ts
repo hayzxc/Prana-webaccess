@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { withAdminAuth } from "@/lib/auth-middleware";
-import { log } from "console";
 
 interface RouteContext {
   params: { id: string };
@@ -43,6 +42,8 @@ export const PATCH = withAdminAuth(
 // DELETE: Menghapus sertifikat
 export const DELETE = withAdminAuth(
   async (request, user, context: RouteContext) => {
+    void request;
+    void user;
     const { id } = context.params;
     try {
       await prisma.certificate.delete({

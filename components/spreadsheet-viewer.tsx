@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,11 +19,7 @@ export function SpreadsheetViewer({ sheetId, editable = false }: SpreadsheetView
   const [editMode, setEditMode] = useState(false)
   const [editData, setEditData] = useState<any[][]>([])
 
-  useEffect(() => {
-    loadSheet()
-  }, [sheetId])
-
-  const loadSheet = async () => {
+  const loadSheet = useCallback(async () => {
     setLoading(true)
     try {
       const data = await getSheet(sheetId)
@@ -36,7 +32,11 @@ export function SpreadsheetViewer({ sheetId, editable = false }: SpreadsheetView
     } finally {
       setLoading(false)
     }
-  }
+  }, [sheetId])
+
+  useEffect(() => {
+    loadSheet()
+  }, [loadSheet])
 
   const handleSave = async () => {
     if (!sheet) return

@@ -119,16 +119,22 @@ export function updateFumigationTrackingProgress(
       fumigationTrackings[index].notes = notes
     }
 
-    // Update timestamps based on progress
+    // Update timestamps based on progress, but avoid overwriting existing timestamps
     const now = new Date().toISOString()
     if (progressStatus === "aeration") {
-      fumigationTrackings[index].aerationStartTime = now
+      if (!fumigationTrackings[index].aerationStartTime) {
+        fumigationTrackings[index].aerationStartTime = now
+      }
     } else if (progressStatus === "ready") {
-      // Container ready time should be calculated from gassing time + 27 hours
-      if (fumigationTrackings[index].gassingTime) {
-        const gassingDate = new Date(fumigationTrackings[index].gassingTime!)
-        const readyDate = new Date(gassingDate.getTime() + 27 * 60 * 60 * 1000)
-        fumigationTrackings[index].containerReadyTime = readyDate.toISOString()
+      // Only set containerReadyTime if it wasn't already set
+      if (!fumigationTrackings[index].containerReadyTime) {
+        if (fumigationTrackings[index].gassingTime) {
+          const gassingDate = new Date(fumigationTrackings[index].gassingTime!)
+          const readyDate = new Date(gassingDate.getTime() + 27 * 60 * 60 * 1000)
+          fumigationTrackings[index].containerReadyTime = readyDate.toISOString()
+        } else {
+          fumigationTrackings[index].containerReadyTime = now
+        }
       }
     }
 

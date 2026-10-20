@@ -6,6 +6,7 @@ import { AuthProvider } from "@/lib/simple-backend-auth";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Toaster } from "react-hot-toast";
 import NextTopLoader from "nextjs-toploader";
+import ChatWidget from "@/components/ChatWidget";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -39,6 +40,7 @@ export default function RootLayout({
             speed={200}
           />
           <ErrorBoundary>{children}</ErrorBoundary>
+          <ChatWidget />
           <Toaster />
         </AuthProvider>
       </body>

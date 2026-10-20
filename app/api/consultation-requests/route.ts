@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { ConsultationRequest } from "@/types";
-
 // GET /api/consultation-requests - Mendapatkan semua request konsultasi
 export async function GET() {
   try {

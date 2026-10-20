@@ -39,7 +39,8 @@ export const POST = asyncHandler(async (request: NextRequest) => {
   });
 
   // Jangan kirim balik password hash di response
-  const { password: _, ...userWithoutPassword } = user;
+  const { password: _password, ...userWithoutPassword } = user;
+  void _password;
 
   return Response.json(
     {

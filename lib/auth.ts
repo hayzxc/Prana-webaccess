@@ -1,23 +1,10 @@
 // @ts-expect-error - NextAuth types compatibility
 import type { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
+import { PrismaClient } from "@/generated/prisma"
+import { compare } from "bcryptjs"
 
-const users = [
-  {
-    id: "1",
-    email: "admin@prana.com",
-    password: "admin123",
-    name: "Admin",
-    role: "admin",
-  },
-  {
-    id: "2",
-    email: "user@prana.com",
-    password: "user123",
-    name: "User",
-    role: "user",
-  },
-]
+const prisma = new PrismaClient()
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -32,9 +19,17 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        const user = users.find((user) => user.email === credentials.email && user.password === credentials.password)
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        })
 
         if (!user) {
+          return null
+        }
+
+        const isPasswordValid = await compare(credentials.password, user.password)
+
+        if (!isPasswordValid) {
           return null
         }
 
@@ -52,13 +47,14 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.role = user.role
+        token.id = user.id
       }
       return token
     },
     // @ts-expect-error - NextAuth callback types
     async session({ session, token }) {
       if (token) {
-        session.user.id = token.sub!
+        session.user.id = token.id as string
         session.user.role = token.role as string
       }
       return session
@@ -70,4 +66,5 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
+  secret: process.env.NEXTAUTH_SECRET,
 }
